@@ -1,0 +1,1 @@
+include ':app', ':libopensource', ':module_download', ':drawdemo'
