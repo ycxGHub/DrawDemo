@@ -1,18 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="adr.ycx.com.drawdemo.activity.MainActivity">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              tools:context="adr.ycx.com.drawdemo.activity.MainActivity">
+
+
 
     <adr.ycx.com.drawdemo.TestView
+        android:id="@+id/testView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"/>
 
-</android.support.constraint.ConstraintLayout>
+    <LinearLayout
+        android:id="@+id/lin_up"
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:background="@android:color/background_light"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/btn_cancel"
+            android:layout_width="0dp"
+            android:layout_height="35dp"
+
+            android:gravity="center"
+            android:layout_weight="1"
+
+            android:src="@mipmap/exit"/>
+
+        <ImageView
+            android:id="@+id/btn_revertback"
+            android:layout_width="0dp"
+            android:layout_height="35dp"
+            android:gravity="center"
+            android:layout_weight="1"
+
+            android:src="@mipmap/upstep"/>
+
+        <ImageView
+            android:id="@+id/btn_revertforward"
+            android:layout_width="0dp"
+            android:layout_height="35dp"
+            android:gravity="center"
+            android:layout_weight="1"
+
+            android:src="@mipmap/nextstep"/>
+
+        <ImageView
+            android:id="@+id/btn_save_data"
+            android:layout_width="0dp"
+            android:layout_height="35dp"
+            android:gravity="center"
+            android:layout_weight="1"
+
+            android:src="@mipmap/save"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_alignBottom="@+id/lin_up"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/holo_red_dark"
+        />
+</RelativeLayout>

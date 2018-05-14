@@ -1,23 +1,52 @@
 package adr.ycx.com.drawdemo;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Path;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
 
-import adr.ycx.com.drawdemo.data.DrawPath;
+import adr.ycx.com.drawdemo.data.DrawCanvas;
+import adr.ycx.com.drawdemo.data.DrawData;
+import adr.ycx.com.drawdemo.data.SimpleData;
+import adr.ycx.com.drawdemo.draw.DrawConfigListener;
+import adr.ycx.com.drawdemo.draw.DrawEventListener;
+import adr.ycx.com.drawdemo.draw.DrawEventManager;
 
 /**
  * 创建日期：2018/5/11
  * 创建者ycx
  */
 
-public class TestView extends View implements DrawStateListener {
-    ArrayList<DrawPath> paths = new ArrayList<>();
+public class TestView extends View implements DrawEventListener, DrawConfigListener {
+    DrawCanvas mDrawCanvans;
+    DrawConfig mDrawConfig = new DrawConfig();
+    Path mPath;
+    DrawData drawData;
+    DrawEventManager mDrawStateManager;
+    ArrayList<DrawCanvas> mDrawCanvasArrayList = new ArrayList<>();
+    Matrix mMatrix = new Matrix();
 
+    float xCen = 0;
+    float yCen = 0;
+    float scale = 1.0f;
+    float scaleFactorCurrent = 1;
+    float cX;
+    float cY;
+
+    public RectF originCanvasRect = new RectF();
+
+    public RectF currentCanvasRect = new RectF();
+    public SimpleData mSimpleData;
 
     public TestView(Context context) {
         super(context);
@@ -26,6 +55,7 @@ public class TestView extends View implements DrawStateListener {
 
     public TestView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+
 
     }
 
@@ -42,27 +72,117 @@ public class TestView extends View implements DrawStateListener {
     @Override
     protected void onDraw(Canvas canvas) {
 
-        super.onDraw(canvas);
+        mMatrix.reset();
+
+        mMatrix.preTranslate(xCen, yCen);
+        float tempScale = scaleFactorCurrent * scale;
+        canvas.drawColor(Color.parseColor("#FFF5F5F5"));
+        if (tempScale < DrawConfig.MIN_SCALE) {
+            tempScale = DrawConfig.MIN_SCALE;
+        }
+        if (tempScale > DrawConfig.MAX_SCALE) {
+            tempScale = DrawConfig.MAX_SCALE;
+        }
+        mMatrix.preScale(tempScale, tempScale, getWidth() / 2, getHeight() / 2);
+
+//        canvas.drawColor(Color.WHITE);
+
+        mMatrix.mapRect(currentCanvasRect, originCanvasRect);
+
+        canvas.drawBitmap(mDrawCanvans.getCacheBitmap(), mMatrix, mDrawConfig.drawPaint);
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        Log.d("TestView", "onSizeChanged: ");
+        mDrawStateManager = new DrawEventManager(new Rect(0, 0, w, h), this);
+        mDrawCanvans = new DrawCanvas(w, h);
+        mDrawCanvans.setSimpleData(mSimpleData);
+        originCanvasRect = new RectF(0, 0, w, h);
+        this.setTouchDelegate(mDrawStateManager);
+        super.onSizeChanged(w, h, oldw, oldh);
     }
 
 
     @Override
-    public void onDrawPath() {
+    public void onPathMoveToNext(float pX, float pY, float cX, float cY) {
+        mPath.quadTo(pX, pY, cX, cY);
+        drawData.setPath(mPath);
+        mDrawCanvans.addData(drawData);
+        mDrawCanvans.drawOnBitmap(drawData);
+        invalidate();
+    }
+
+    @Override
+    public void onPathSave(float endX, float endY) {
+        drawData.setPath(mPath);
+        mDrawCanvans.addData(drawData);
+        mDrawCanvans.drawOnBitmap(drawData);
+        mPath = null;
+        invalidate();
+    }
+
+    @Override
+    public void onPathCreate(float startX, float startY) {
+        mPath = new Path();
+        drawData = new DrawData();
+        drawData.setPaint(mDrawConfig.drawPaint);
+        mPath.moveTo(startX, startY);
+    }
+
+    @Override
+    public void onCancel() {
+        scale = scaleFactorCurrent * scale;
+        if (scale < DrawConfig.MIN_SCALE) {
+            scale = DrawConfig.MIN_SCALE;
+        }
+        if (scale > DrawConfig.MAX_SCALE) {
+            scale = DrawConfig.MAX_SCALE;
+        }
+        scaleFactorCurrent = 1;
+    }
+
+    @Override
+    public void onZoom(float scaleFactor, float cX, float cY) {
+        this.scaleFactorCurrent = scaleFactor;
+        this.cX = cX;
+        this.cY = cY;
+
+//        checkBorderAndCenterWhenScale();
+        invalidate();
+    }
+
+    @Override
+    public void onTranslate(float dx, float dy) {
+        xCen = xCen + dx;
+        yCen = yCen + dy;
+//        mMatrix.postTranslate(xCen,yCen);
+        invalidate();
+    }
+
+
+    @Override
+    public void changeDrawPaintWidth(float x) {
+        mDrawConfig.drawPaint.setStrokeWidth(x);
+    }
+
+    @Override
+    public void changeDrawPaintColor(int color) {
 
     }
 
     @Override
-    public void onErase() {
+    public void changeDrawPaintTransmission() {
 
     }
 
-    @Override
-    public void onTraslate() {
+    public void setSimpleData(SimpleData simpleData) {
+
+       mSimpleData=simpleData;
 
     }
 
-    @Override
-    public void onZoom() {
-
+    public Bitmap getBitmap() {
+        return mDrawCanvans.getCacheBitmap();
     }
 }

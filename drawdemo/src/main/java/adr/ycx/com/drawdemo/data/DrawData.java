@@ -1,5 +1,6 @@
 package adr.ycx.com.drawdemo.data;
 
+import android.graphics.Paint;
 import android.graphics.Path;
 
 /**
@@ -7,8 +8,17 @@ import android.graphics.Path;
  * 创建者ycx
  */
 
-public class DrawPath {
+public class DrawData {
     Path path;
+    Paint mPaint=new Paint();
+
+    public Paint getPaint() {
+        return mPaint;
+    }
+
+    public void setPaint(Paint paint) {
+        mPaint = paint;
+    }
 
     public Path getPath() {
 
