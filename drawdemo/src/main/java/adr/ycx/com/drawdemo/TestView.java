@@ -97,7 +97,8 @@ public class TestView extends View implements DrawEventListener, DrawConfigListe
         Log.d("TestView", "onSizeChanged: ");
         mDrawStateManager = new DrawEventManager(new Rect(0, 0, w, h), this);
         mDrawCanvans = new DrawCanvas(w, h);
-        mDrawCanvans.setSimpleData(mSimpleData);
+        if (mSimpleData != null)
+            mDrawCanvans.setSimpleData(mSimpleData);
         originCanvasRect = new RectF(0, 0, w, h);
         this.setTouchDelegate(mDrawStateManager);
         super.onSizeChanged(w, h, oldw, oldh);
@@ -106,10 +107,22 @@ public class TestView extends View implements DrawEventListener, DrawConfigListe
 
     @Override
     public void onPathMoveToNext(float pX, float pY, float cX, float cY) {
-        mPath.quadTo(pX, pY, cX, cY);
+        float[] values = {pX,pY,cX,cY};
+        float[] pathMatrix = new float[9];
+        mMatrix.getValues(pathMatrix);
+        pathMatrix[0] = 1/pathMatrix[0];
+        pathMatrix[2] = -pathMatrix[2];
+        pathMatrix[5] = -pathMatrix[5];
+        Matrix matrix=new Matrix();
+        matrix.postTranslate(pathMatrix[2],pathMatrix[5]);
+        matrix.postScale(pathMatrix[0],pathMatrix[0]);
+
+        matrix.mapPoints(values);
+        drawData.setPaint(mDrawConfig.drawPaint);
+        mPath.quadTo(values[0], values[1], values[2], values[3]);
         drawData.setPath(mPath);
-        mDrawCanvans.addData(drawData);
-        mDrawCanvans.drawOnBitmap(drawData);
+
+        mDrawCanvans.drawOnBitmap(drawData, mMatrix);
         invalidate();
     }
 
@@ -117,7 +130,7 @@ public class TestView extends View implements DrawEventListener, DrawConfigListe
     public void onPathSave(float endX, float endY) {
         drawData.setPath(mPath);
         mDrawCanvans.addData(drawData);
-        mDrawCanvans.drawOnBitmap(drawData);
+        mDrawCanvans.drawOnBitmap(drawData, mMatrix);
         mPath = null;
         invalidate();
     }
@@ -126,8 +139,18 @@ public class TestView extends View implements DrawEventListener, DrawConfigListe
     public void onPathCreate(float startX, float startY) {
         mPath = new Path();
         drawData = new DrawData();
+        float[] values = {startX, startY};
+        float[] pathMatrix = new float[9];
+        mMatrix.getValues(pathMatrix);
+        pathMatrix[0] =1/ pathMatrix[0];
+        pathMatrix[2] = -pathMatrix[2];
+        pathMatrix[5] = -pathMatrix[5];
+        Matrix matrix=new Matrix();
+        matrix.postTranslate(pathMatrix[2],pathMatrix[5]);
+        matrix.postScale(pathMatrix[0],pathMatrix[0]);
+        matrix.mapPoints(values);
         drawData.setPaint(mDrawConfig.drawPaint);
-        mPath.moveTo(startX, startY);
+        mPath.moveTo(values[0], values[1]);
     }
 
     @Override
@@ -176,9 +199,21 @@ public class TestView extends View implements DrawEventListener, DrawConfigListe
 
     }
 
+    @Override
+    public void undo() {
+        mDrawCanvans.undo();
+        invalidate();
+    }
+
+    @Override
+    public void undoBack() {
+        mDrawCanvans.undoBack();
+        invalidate();
+    }
+
     public void setSimpleData(SimpleData simpleData) {
 
-       mSimpleData=simpleData;
+        mSimpleData = simpleData;
 
     }
 

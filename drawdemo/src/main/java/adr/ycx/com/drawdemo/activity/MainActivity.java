@@ -14,17 +14,18 @@ import com.avos.avoscloud.AVException;
 
 import java.io.File;
 
-import adr.ycx.com.drawdemo.helper.AvHelper;
 import adr.ycx.com.drawdemo.R;
 import adr.ycx.com.drawdemo.TestView;
-import adr.ycx.com.drawdemo.helper.Util;
 import adr.ycx.com.drawdemo.data.SimpleData;
+import adr.ycx.com.drawdemo.draw.DrawConfigListener;
+import adr.ycx.com.drawdemo.helper.AvHelper;
+import adr.ycx.com.drawdemo.helper.Util;
 
 public class MainActivity extends AppCompatActivity implements AvHelper.AvDataPushListener {
     TestView mTestView;
     AvHelper mAvHelper;
     ProgressDialog mProgressDialog;
-
+    DrawConfigListener mDrawConfigListener;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements AvHelper.AvDataPu
 //        this.requestWindowFeature(Window.FEATURE_NO_TITLE);//去掉标题栏 第一种方法
         setContentView(R.layout.activity_main);
         mTestView = (TestView) findViewById(R.id.testView);
+        mDrawConfigListener=mTestView;
         ImageView save = (ImageView) findViewById(R.id.btn_save_data);
         save.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -49,6 +51,20 @@ public class MainActivity extends AppCompatActivity implements AvHelper.AvDataPu
             @Override
             public void onClick(View view) {
                 MainActivity.this.finish();
+            }
+        });
+        ImageView btn_undo= (ImageView) findViewById(R.id.btn_revertback);
+        ImageView btn_revert= (ImageView) findViewById(R.id.btn_revertforward);
+        btn_undo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mDrawConfigListener.undo();
+            }
+        });
+        btn_revert.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mDrawConfigListener.undoBack();
             }
         });
     }

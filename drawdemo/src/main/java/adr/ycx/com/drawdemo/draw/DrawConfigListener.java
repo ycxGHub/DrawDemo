@@ -5,7 +5,8 @@ public interface DrawConfigListener {
     void changeDrawPaintColor(int Color);
     void changeDrawPaintTransmission();
 
-
+    void undo();
+    void undoBack();
 
 
 }
