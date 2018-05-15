@@ -2,6 +2,7 @@ package adr.ycx.com.drawdemo.helper;
 
 import android.graphics.Bitmap;
 import android.graphics.PointF;
+import android.os.Environment;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,6 +25,26 @@ public class Util {
     }
 
     public static void saveBitmapByPath(File file, Bitmap bitmap) {
+
+        try {
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            FileOutputStream fos = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            fos.flush();
+            fos.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void saveBitmapByName(String name, Bitmap bitmap) {
+        String dir = Environment.getExternalStorageDirectory() + "/drawDemo/local/";
+        File file=new File(dir,name);
         try {
             if (!file.exists()) {
                 file.createNewFile();

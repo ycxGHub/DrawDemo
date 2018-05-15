@@ -9,6 +9,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import adr.ycx.com.drawdemo.bitCache.BitmapCacheUtil;
 
@@ -16,17 +17,23 @@ public class DrawCanvas {
     ArrayList<DrawData> mCacheData = new ArrayList<>();
     ArrayList<DrawData> deleteData = new ArrayList<>();
     Bitmap mBitmap;
-    Bitmap mCacheBitmap;
     Bitmap backgroundBitmap;
-    Canvas mCacheCanvas;
     Canvas mCanvas;
+    Canvas mHoldCanvas;
     SimpleData mSimpleData;
     Paint paint = new Paint();
     int w, h;
+    private int MAX_SIZE = 20;
+    PorterDuffXfermode eraserMode = new PorterDuffXfermode(PorterDuff.Mode.DST_IN);
 
     public void addData(DrawData path) {
-        mCacheData.add(path);
-        drawAtBackGroundBitmap();
+        if (mCacheData.size() >= MAX_SIZE) {
+            mCacheData.get(0).drawSelf(mHoldCanvas);
+            mCacheData.remove(0);
+            mCacheData.add(MAX_SIZE - 1, path);
+        } else {
+            mCacheData.add(path);
+        }
     }
 
     public DrawCanvas(int w, int h) {
@@ -36,12 +43,10 @@ public class DrawCanvas {
         mCanvas = new Canvas();
         mCanvas.setBitmap(mBitmap);
         mCanvas.drawColor(Color.WHITE);
-        mCacheBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        mCacheCanvas = new Canvas();
-        mCacheCanvas.setBitmap(mCacheBitmap);
-        mCacheCanvas.drawColor(Color.WHITE);
+        backgroundBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        mHoldCanvas = new Canvas();
+        mHoldCanvas.setBitmap(backgroundBitmap);
         drawAll();
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER));
     }
 
     public void drawAll() {
@@ -50,66 +55,65 @@ public class DrawCanvas {
         if (backgroundBitmap != null) {
             mCanvas.drawBitmap(backgroundBitmap, 0, 0, paint);
         }
-
-        drawAllCache();
-        mCanvas.drawBitmap(mCacheBitmap, 0, 0, paint);
-
-
+        for (DrawData drawData : mCacheData) {
+           drawData.drawSelf(mCanvas);
+        }
     }
 
-    public Bitmap drawOnBitmap(DrawData drawData, Matrix matrix) {
-        float[] values = new float[9];
-        matrix.getValues(values);
-        mCacheCanvas.drawPath(drawData.path, drawData.mPaint);
-        return mCacheBitmap;
+    public Bitmap drawOnBitmap(DrawData drawData) {
+        drawData.drawSelf(mCanvas);
+        return mBitmap;
     }
 
     public void undo() {
-        deleteData.add(mCacheData.get(mCacheData.size() - 1));
-        mCacheData.remove(mCacheData.size() - 1);
-        drawAllCache();
-
-
+        if (mCacheData.size() > 0) {
+            addCacheData(deleteData, mCacheData.get(mCacheData.size() - 1));
+            removeCacheData(mCacheData);
+            drawAll();
+        }
     }
 
     public void undoBack() {
-        mCacheData.add(deleteData.get(deleteData.size() - 1));
-        deleteData.remove(deleteData.size() - 1);
-        drawAllCache();
-    }
-
-    public void drawAllCache() {
-        mCacheBitmap.eraseColor(Color.WHITE);
-        mCacheCanvas.drawColor(Color.WHITE);
-        for (DrawData drawData : mCacheData) {
-            mCacheCanvas.drawPath(drawData.path, drawData.mPaint);
+        if (deleteData.size() > 0) {
+            addCacheData(mCacheData, deleteData.get(deleteData.size() - 1));
+            removeCacheData(deleteData);
+            drawAll();
         }
-
     }
+
 
     public Bitmap getCacheBitmap() {
         return mBitmap;
     }
 
-    public void drawAtBackGroundBitmap() {
-        if (mCacheData.size() > 20) {
-//        drawData.path.offset(-values[2],-values[5]);
-            mCanvas.drawPath(mCacheData.get(0).path, mCacheData.get(0).getPaint());
-            mCacheData.remove(0);
-            drawAllCache();
+    private void removeCacheData(List<DrawData> datas) {
+        if (datas.size() != 0)
+            datas.remove(datas.size() - 1);
+    }
+
+    private void addCacheData(List<DrawData> datas, DrawData drawData) {
+        if (drawData != null) {
+            if (datas.size() >= MAX_SIZE) {
+                datas.remove(0);
+                datas.add(drawData);
+            } else
+                datas.add(drawData);
         }
-
-
     }
 
     public void setSimpleData(SimpleData simpleData) {
-
         Bitmap backgroundBitmap = BitmapCacheUtil.getInstance().getBitmap(simpleData.getImageUrl());
         if (backgroundBitmap != null) {
-            this.backgroundBitmap = backgroundBitmap;
+            Matrix matrix = new Matrix();
+            int oldW = backgroundBitmap.getWidth();
+            int oldH = backgroundBitmap.getHeight();
+            float sx = (float) w / oldW;
+            float sy = (float) h / oldH;
+            matrix.setScale(sx, sy);
+            Bitmap temp = Bitmap.createBitmap(backgroundBitmap, 0, 0, oldW, oldH, matrix, true);
+            mHoldCanvas.drawBitmap(temp, 0, 0, paint);
         }
         drawAll();
-
     }
 
 

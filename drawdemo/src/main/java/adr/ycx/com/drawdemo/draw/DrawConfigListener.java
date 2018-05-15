@@ -7,6 +7,6 @@ public interface DrawConfigListener {
 
     void undo();
     void undoBack();
-
+    void erase(boolean ispen);
 
 }

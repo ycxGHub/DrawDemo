@@ -35,7 +35,7 @@ public class TestView extends View implements DrawEventListener, DrawConfigListe
     DrawEventManager mDrawStateManager;
     ArrayList<DrawCanvas> mDrawCanvasArrayList = new ArrayList<>();
     Matrix mMatrix = new Matrix();
-
+    boolean isPen=true;
     float xCen = 0;
     float yCen = 0;
     float scale = 1.0f;
@@ -107,22 +107,20 @@ public class TestView extends View implements DrawEventListener, DrawConfigListe
 
     @Override
     public void onPathMoveToNext(float pX, float pY, float cX, float cY) {
-        float[] values = {pX,pY,cX,cY};
+        float[] values = {pX, pY, cX, cY};
         float[] pathMatrix = new float[9];
         mMatrix.getValues(pathMatrix);
-        pathMatrix[0] = 1/pathMatrix[0];
+        pathMatrix[0] = 1 / pathMatrix[0];
         pathMatrix[2] = -pathMatrix[2];
         pathMatrix[5] = -pathMatrix[5];
-        Matrix matrix=new Matrix();
-        matrix.postTranslate(pathMatrix[2],pathMatrix[5]);
-        matrix.postScale(pathMatrix[0],pathMatrix[0]);
-
+        Matrix matrix = new Matrix();
+        matrix.postTranslate(pathMatrix[2], pathMatrix[5]);
+        matrix.postScale(pathMatrix[0], pathMatrix[0]);
         matrix.mapPoints(values);
         drawData.setPaint(mDrawConfig.drawPaint);
         mPath.quadTo(values[0], values[1], values[2], values[3]);
         drawData.setPath(mPath);
-
-        mDrawCanvans.drawOnBitmap(drawData, mMatrix);
+        mDrawCanvans.drawOnBitmap(drawData);
         invalidate();
     }
 
@@ -130,7 +128,6 @@ public class TestView extends View implements DrawEventListener, DrawConfigListe
     public void onPathSave(float endX, float endY) {
         drawData.setPath(mPath);
         mDrawCanvans.addData(drawData);
-        mDrawCanvans.drawOnBitmap(drawData, mMatrix);
         mPath = null;
         invalidate();
     }
@@ -139,15 +136,16 @@ public class TestView extends View implements DrawEventListener, DrawConfigListe
     public void onPathCreate(float startX, float startY) {
         mPath = new Path();
         drawData = new DrawData();
+        drawData.isPen=isPen;
         float[] values = {startX, startY};
         float[] pathMatrix = new float[9];
         mMatrix.getValues(pathMatrix);
-        pathMatrix[0] =1/ pathMatrix[0];
+        pathMatrix[0] = 1 / pathMatrix[0];
         pathMatrix[2] = -pathMatrix[2];
         pathMatrix[5] = -pathMatrix[5];
-        Matrix matrix=new Matrix();
-        matrix.postTranslate(pathMatrix[2],pathMatrix[5]);
-        matrix.postScale(pathMatrix[0],pathMatrix[0]);
+        Matrix matrix = new Matrix();
+        matrix.postTranslate(pathMatrix[2], pathMatrix[5]);
+        matrix.postScale(pathMatrix[0], pathMatrix[0]);
         matrix.mapPoints(values);
         drawData.setPaint(mDrawConfig.drawPaint);
         mPath.moveTo(values[0], values[1]);
@@ -191,7 +189,7 @@ public class TestView extends View implements DrawEventListener, DrawConfigListe
 
     @Override
     public void changeDrawPaintColor(int color) {
-
+        mDrawConfig.drawPaint.setColor(color);
     }
 
     @Override
@@ -209,6 +207,11 @@ public class TestView extends View implements DrawEventListener, DrawConfigListe
     public void undoBack() {
         mDrawCanvans.undoBack();
         invalidate();
+    }
+
+    @Override
+    public void erase(boolean isPen) {
+        this.isPen=isPen;
     }
 
     public void setSimpleData(SimpleData simpleData) {

@@ -19,10 +19,11 @@
         android:id="@+id/lin_up"
         android:layout_width="match_parent"
         android:layout_height="35dp"
-        android:background="@android:color/background_light"
+        android:background="@color/background"
         android:orientation="horizontal">
 
         <ImageView
+            android:background="@color/background"
             android:id="@+id/btn_cancel"
             android:layout_width="0dp"
             android:layout_height="35dp"
@@ -66,4 +67,33 @@
         android:layout_height="1dp"
         android:background="@android:color/holo_red_dark"
         />
+
+    <LinearLayout
+        android:layout_alignParentBottom="true"
+        android:id="@+id/lin_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:background="@android:color/background_light"
+        android:orientation="horizontal">
+
+        <ImageView
+
+            android:id="@+id/btn_pencil"
+            android:layout_width="0dp"
+            android:layout_height="35dp"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:src="@mipmap/pencil"/>
+
+        <ImageView
+            android:id="@+id/btn_erase"
+            android:layout_width="0dp"
+            android:layout_height="35dp"
+            android:gravity="center"
+            android:layout_weight="1"
+
+            android:src="@mipmap/erase"/>
+
+
+    </LinearLayout>
 </RelativeLayout>
